@@ -32,11 +32,14 @@ class CSVProcessor:
         """
         try:
             self.validate_marketplace(marketplace)
+
+            self.current_market = MARKETPLACE_CONFIG[marketplace]
+
             df_amazon_statement = pd.read_csv(file_source)
             self.validate_amazon_statement(df_amazon_statement)
 
             self.raw_data = df_amazon_statement
-            self.current_market = MARKETPLACE_CONFIG[marketplace]
+
             return df_amazon_statement
 
         except Exception as e:
