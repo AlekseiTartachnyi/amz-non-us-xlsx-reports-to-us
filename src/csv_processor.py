@@ -20,24 +20,50 @@ class CSVProcessor:
                 f"Supported markets: {list(MARKETPLACE_CONFIG.keys())}"
             )
 
-    def read_file(self, file_source: Union[str, Path, bytes], marketplace: str) -> pd.DataFrame:
+    def detect_marketplace_currency(self, df: pd.DataFrame) -> str:
         """
-        Read Amazon statement file and perform initial validation
+        Extract currency from Total column in the DataFrame.
 
         Args:
-            file_source: Excel file (path or bytes)
-            marketplace: Market code (US, CA, AU)
+            df: pandas DataFrame containing Amazon statement data
+
+        Returns:
+            str: Currency code (USD, CAD, AUD)
+        """
+        total_column = next(
+            (col for col in df.columns if col.startswith('Total (')),
+            None
+        )
+
+        currency = total_column[total_column.find('(') + 1:total_column.find(')')]
+
+        if currency not in MARKETPLACE_CONFIG:
+            raise ValueError(
+                f"Unsupported currency: {currency}. "
+                f"Supported currencies: {list(MARKETPLACE_CONFIG.keys())}"
+            )
+
+        return currency
+
+
+    def read_file(self, file_source: Union[str, Path, bytes]) -> pd.DataFrame:
+        """
+        Read Amazon statement file and perform validation
+
+        Args:
+            file_source: CSV file (path or bytes)
+
         Returns:
             pandas DataFrame with the file content
         """
         try:
-            self.validate_marketplace(marketplace)
-
-            self.current_market = MARKETPLACE_CONFIG[marketplace]
-
             df_amazon_statement = pd.read_csv(file_source)
             self.validate_amazon_statement(df_amazon_statement)
 
+            currency = self.detect_marketplace_currency(df_amazon_statement)
+            self.validate_marketplace(currency)
+
+            self.current_market = MARKETPLACE_CONFIG[currency]
             self.raw_data = df_amazon_statement
 
             return df_amazon_statement
@@ -45,12 +71,12 @@ class CSVProcessor:
         except Exception as e:
             raise Exception(f"Error reading file: {str(e)}")
 
+
     def validate_amazon_statement(self, df_amazon_statement: pd.DataFrame) -> None:
         """
         Check if the file looks like an Amazon statement
         Raises ValueError if validation fails
         """
-        currency = self.current_market['currency']
 
         required_columns = [
             'Date',
@@ -60,11 +86,19 @@ class CSVProcessor:
             'Total product charges',
             'Total promotional rebates',
             'Amazon fees',
-            'Other',
-            f'Total ({currency})'
+            'Other'
         ]
 
         missing_columns = [column for column in required_columns if column not in df_amazon_statement.columns]
 
         if missing_columns:
             raise ValueError(f"Missing required columns: {missing_columns}")
+
+        # Check if there's any 'Total (*)' column
+        total_column = next(
+            (col for col in df_amazon_statement.columns if col.startswith('Total (')),
+            None
+        )
+
+        if not total_column:
+            raise ValueError("Missing required 'Total' column")

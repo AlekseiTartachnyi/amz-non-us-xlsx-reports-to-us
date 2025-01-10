@@ -14,11 +14,11 @@ def csv_processor():
 @pytest.fixture
 def test_data_path():
     """Fixture to get test files directory relative to this test file"""
-    return Path(__file__).parent / 'test_files'
+    return Path(__file__).parent / 'test_files_csv_processor'
 
 
 def test_validate_marketplace_valid(csv_processor):
-    csv_processor.validate_marketplace('US')  # Should pass
+    csv_processor.validate_marketplace('USD')  # Should pass
 
 
 def test_validate_marketplace_invalid(csv_processor):
@@ -26,11 +26,21 @@ def test_validate_marketplace_invalid(csv_processor):
         csv_processor.validate_marketplace('Test')
 
 
+def test_detect_marketplace_currency_unsupported(csv_processor):
+    """Test detection of unsupported currency fails appropriately"""
+    df = pd.DataFrame(columns=[
+        'Date', 'Transaction type', 'Order ID', 'Total (EUR)'
+    ])
+
+    with pytest.raises(ValueError, match="Unsupported currency: EUR"):
+        csv_processor.detect_marketplace_currency(df)
+
+
 def test_validate_amazon_statement_with_valid_columns(csv_processor):
     """Test DataFrame validation with all required columns present"""
     # Create test DataFrame with minimum valid structure
 
-    csv_processor.current_market = MARKETPLACE_CONFIG['US']
+    csv_processor.current_market = MARKETPLACE_CONFIG['USD']
 
     valid_df = pd.DataFrame(columns=[
         'Date', 'Transaction type', 'Order ID', 'Product Details',
@@ -46,7 +56,7 @@ def test_validate_amazon_statement_with_missing_columns(csv_processor):
     """Test DataFrame validation fails when columns are missing"""
     # Create DataFrame with incomplete column set
 
-    csv_processor.current_market = MARKETPLACE_CONFIG['US']
+    csv_processor.current_market = MARKETPLACE_CONFIG['USD']
 
     invalid_df = pd.DataFrame(columns=[
         'Date', 'Order ID'  # Deliberately missing most required columns
@@ -59,10 +69,7 @@ def test_validate_amazon_statement_with_missing_columns(csv_processor):
 def test_read_valid_statement(csv_processor, test_data_path):
     """Test reading valid Amazon statement CSV"""
     # First, let's read and check actual data
-    actual_statement_data = csv_processor.read_file(
-        test_data_path / 'valid_statement.csv',
-        'US'
-    )
+    actual_statement_data = csv_processor.read_file(test_data_path / 'valid_statement.csv' )
 
     # Debug: Print actual data
     print("\nActual data from file:")
@@ -87,7 +94,4 @@ def test_read_invalid_statement(csv_processor, test_data_path):
     """Test reading invalid Amazon statement CSV (missing required columns)"""
     with pytest.raises(Exception,
                       match="Error reading file: Missing required columns: \\['Transaction type', 'Amazon fees'\\]"):
-        csv_processor.read_file(
-            test_data_path / 'invalid_statement_missing columns.csv',
-            'US'
-        )
+        csv_processor.read_file(test_data_path / 'invalid_statement_missing columns.csv')

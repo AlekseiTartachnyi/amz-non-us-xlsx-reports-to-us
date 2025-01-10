@@ -167,10 +167,7 @@ def test_transform_marketplace_data(data_processor):
 def test_process_au_statement(csv_processor, data_processor, test_data_path):
     """Test reading and processing Australian statement"""
     # First read the CSV file
-    statement_data = csv_processor.read_file(
-        test_data_path / 'test_AUD_statement.csv',
-        'AU'
-    )
+    statement_data = csv_processor.read_file(test_data_path / 'test_AUD_statement.csv' )
 
     # Transform dates to US format
     us_date_data = data_processor.transform_to_us_date_format(statement_data)

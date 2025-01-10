@@ -1,14 +1,14 @@
 MARKETPLACE_CONFIG = {
-    'US': {
-        'currency': 'USD',
+    'USD': {
+        'market': 'US',
         'date_format': 'MM/DD/YYYY'  # American format
     },
-    'CA': {
-        'currency': 'CAD',
+    'CAD': {
+        'market': 'CA',
         'date_format': 'DD/MM/YYYY'  # Like most other countries
     },
-    'AU': {
-        'currency': 'AUD',
+    'AUD': {
+        'market': 'AU',
         'date_format': 'DD/MM/YYYY'  # Like most other countries
     }
 }
