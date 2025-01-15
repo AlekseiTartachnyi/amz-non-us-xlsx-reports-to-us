@@ -34,7 +34,7 @@ class DataProcessor:
         transformed_dataframe['Date'] = pd.to_datetime(
             transformed_dataframe['Date'],
             format='%d/%m/%Y'
-        ).dt.strftime('%m/%d/%Y')
+        ).dt.strftime('%m/%d/%Y').str.replace('^0', '', regex=True)
 
         return transformed_dataframe
 
@@ -111,9 +111,9 @@ class DataProcessor:
             # Convert numeric columns
             for col in numeric_cols:
                 if currency == 'CAD':
-                    result.at[idx, col] = row[col] / rate
+                    result.at[idx, col] = round(row[col] / rate, 2)
                 else:  # AUD
-                    result.at[idx, col] = row[col] * rate
+                    result.at[idx, col] = round(row[col] * rate, 2)
 
         # Rename currency column
         result = result.rename(columns={f'Total ({currency})': 'Total (USD)'})
