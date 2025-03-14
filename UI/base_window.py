@@ -26,13 +26,12 @@ class BaseWindow(QtWidgets.QDialog):
         self.selected_files = []
 
         # Common UI elements - to be accessed by child classes
-        self.choose_statements_button = self.findChild(QtWidgets.QPushButton, "chooseStatementsButton")
-        self.file_selection_input = self.findChild(QtWidgets.QLineEdit, "fileSelectionInput")
-        self.file_list_text_edit = self.findChild(QtWidgets.QTextEdit, "fileListTextEdit")
+        self.button_choose_statements = self.findChild(QtWidgets.QPushButton, "buttonAddStatements")
+        self.text_edit_file_list = self.findChild(QtWidgets.QTextBrowser, "fileListTextEdit")
 
         # Connect signals to slots
-        if self.choose_statements_button:
-            self.choose_statements_button.clicked.connect(self.open_file_dialog)
+        if self.button_choose_statements:
+            self.button_choose_statements.clicked.connect(self.open_file_dialog)
 
     def open_file_dialog(self):
         """Open file dialog to select Amazon statement CSV files"""
@@ -62,12 +61,9 @@ class BaseWindow(QtWidgets.QDialog):
         files_count = len(files)
         file_label = f"{files_count} file{'s' if files_count > 1 else ''} selected"
 
-        # Update file selection input field
-        if self.file_selection_input:
-            self.file_selection_input.setText(file_label)
 
         # Display selected files in the text edit
-        if self.file_list_text_edit:
+        if self.text_edit_file_list:
             # Create a formatted list of files
             file_list_text = "\n".join(files)
-            self.file_list_text_edit.setText(file_list_text)
+            self.text_edit_file_list.setText(file_list_text)

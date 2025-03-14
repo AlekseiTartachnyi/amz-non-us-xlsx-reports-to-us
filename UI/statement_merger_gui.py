@@ -41,8 +41,8 @@ class MainWindow(BaseWindow):
 
         # Update UI to show processing result
         # This is a placeholder
-        if self.file_list_text_edit:
-            self.file_list_text_edit.append("\nProcessing complete!")
+        if self.text_edit_file_list:
+            self.text_edit_file_list.append("\nProcessing complete!")
 
 
 def main():
